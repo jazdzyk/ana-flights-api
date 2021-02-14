@@ -2,7 +2,7 @@ from db import db
 from models import BaseModel
 
 
-class FlightModel(BaseModel):
+class FlightModel(db.Model, BaseModel):
     __tablename__ = "flights"
 
     date = db.Column(db.Date, nullable=False)

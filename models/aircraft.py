@@ -2,7 +2,7 @@ from db import db
 from models import BaseModel
 
 
-class AircraftModel(BaseModel):
+class AircraftModel(db.Model, BaseModel):
     __tablename__ = "aircrafts"
 
     brand = db.Column(db.String(30), nullable=False)
