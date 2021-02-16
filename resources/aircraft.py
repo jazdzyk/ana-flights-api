@@ -2,19 +2,20 @@ from flask import request
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 
-import factory.responses
+from factory import ResponseFactory
 from models import AircraftModel
 from schemas import AircraftSchema
 
 
 class Aircraft(Resource):
     _schema = AircraftSchema()
+    _response_factory = ResponseFactory("Aircraft")
 
     @classmethod
     def post(cls, brand: str):
         data = request.get_json()
         if AircraftModel.find_by_brand_and_model(brand, data["model"]):
-            return factory.responses.error_already_exists(cls.__name__, "name")
+            return cls._response_factory.error_already_exists("name")
 
         return cls._insert_new(AircraftModel(brand, data["model"]))
 
@@ -25,7 +26,7 @@ class Aircraft(Resource):
                 aircraft = AircraftModel.find_by_brand_and_model(brand, model)
                 aircrafts = [aircraft] if aircraft else []
             return {"aircrafts": [cls._json(aircraft) for aircraft in aircrafts]}
-        return factory.responses.error_not_found(cls.__name__)
+        return cls._response_factory.error_not_found()
 
     @classmethod
     def put(cls, brand: str):
@@ -44,23 +45,23 @@ class Aircraft(Resource):
         model = request.get_json().get("model")
         if model and (aircraft := AircraftModel.find_by_brand_and_model(brand, model)):
             aircraft.delete_from_db()
-            return factory.responses.ok_deleted(cls.__name__)
+            return cls._response_factory.ok_deleted()
 
         if not model and (aircrafts := AircraftModel.find_by_brand(brand)):
             for aircraft in aircrafts:
                 aircraft.delete_from_db()
-            return factory.responses.ok_deleted(cls.__name__, plural=True)
+            return cls._response_factory.ok_deleted(plural=True)
 
-        return factory.responses.error_not_found(cls.__name__)
+        return cls._response_factory.error_not_found()
 
     @classmethod
-    def _insert_new(cls, new_obj: AircraftModel):
+    def _insert_new(cls, aircraft: AircraftModel):
         try:
-            new_obj.save_to_db()
+            aircraft.save_to_db()
         except SQLAlchemyError as err:
-            return factory.responses.error_inserting(cls.__name__)
+            return cls._response_factory.error_inserting()
 
-        return factory.responses.ok_created(cls._json(new_obj))
+        return cls._response_factory.ok_created(cls._json(aircraft))
 
     @classmethod
     def _json(cls, obj: AircraftModel):

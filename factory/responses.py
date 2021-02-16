@@ -5,33 +5,34 @@ from flask import jsonify
 from constants import codes, keys, messages
 
 
-def _payload_response(payload: Dict[str, Any], code: int, json):
-    return jsonify(payload) if json else payload, code
+class ResponseFactory:
+    def __init__(self, obj_name: str):
+        self._obj_name = obj_name
 
+    def error_inserting(self, json=False):
+        return self._message_response(messages.ERROR_INSERTING.format(self._obj_name),
+                                      codes.INTERNAL_ERROR, json=json)
 
-def _message_response(message: str, code: int, json: bool):
-    payload = {keys.MESSAGE: message}
-    return _payload_response(payload, code, json)
+    def error_already_exists(self, attr_name: str, json=False):
+        return self._message_response(messages.ERROR_ALREADY_EXISTS.format(self._obj_name, attr_name),
+                                      codes.BAD_REQUEST, json=json)
 
+    def error_not_found(self, json=False):
+        return self._message_response(messages.ERROR_NOT_FOUND.format(self._obj_name), codes.NOT_FOUND, json)
 
-def error_inserting(obj_name: str, json=False):
-    return _message_response(messages.ERROR_INSERTING.format(obj_name),
-                             codes.INTERNAL_ERROR, json=json)
+    def ok_deleted(self, plural=False, json=False):
+        plural_suffix = "s" if plural else ""
+        return self._message_response(messages.OK_DELETED.format(plural_suffix, self._obj_name), codes.OK, json)
 
+    @classmethod
+    def ok_created(cls, payload: Dict[str, Any], json=False):
+        return cls._payload_response(payload, codes.ACCEPTED, json)
 
-def error_already_exists(obj_name: str, attr_name: str, json=False):
-    return _message_response(messages.ERROR_ALREADY_EXISTS.format(obj_name, attr_name),
-                             codes.BAD_REQUEST, json=json)
+    @classmethod
+    def _payload_response(cls, payload: Dict[str, Any], code: int, json):
+        return jsonify(payload) if json else payload, code
 
-
-def error_not_found(obj_name: str, json=False):
-    return _message_response(messages.ERROR_NOT_FOUND.format(obj_name), codes.NOT_FOUND, json)
-
-
-def ok_created(payload: Dict[str, Any], json=False):
-    return _payload_response(payload, codes.ACCEPTED, json)
-
-
-def ok_deleted(obj_name: str, plural=False, json=False):
-    plural_suffix = "s" if plural else ""
-    return _message_response(messages.OK_DELETED.format(plural_suffix, obj_name), codes.OK, json)
+    @classmethod
+    def _message_response(cls, message: str, code: int, json: bool):
+        payload = {keys.MESSAGE: message}
+        return cls._payload_response(payload, code, json)
