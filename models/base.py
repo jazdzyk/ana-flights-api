@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from db import db
 
@@ -15,3 +16,15 @@ class BaseModel:
         self.created = now
         self.last_modified = now
         self.modified_count = 0
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self) -> None:
+        db.session.delete(self)
+        db.session.commit()
+
+    @classmethod
+    def find_all(cls) -> List:
+        return cls.query.all()

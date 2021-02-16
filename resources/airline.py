@@ -1,8 +1,9 @@
 from flask import request
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
-from models import AirlineModel
+
 import factory.responses
+from models import AirlineModel
 from schemas.airline import AirlineSchema
 
 
@@ -42,7 +43,7 @@ class Airline(Resource):
         return factory.responses.error_not_found(cls.__name__)
 
     @classmethod
-    def _insert_new(cls, name):
+    def _insert_new(cls, name: str):
         new_airline = AirlineModel(name)
         try:
             new_airline.save_to_db()

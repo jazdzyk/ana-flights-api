@@ -32,5 +32,6 @@ def ok_created(payload: Dict[str, Any], json=False):
     return _payload_response(payload, codes.ACCEPTED, json)
 
 
-def ok_deleted(obj_name: str, json=False):
-    return _message_response(messages.OK_DELETED.format(obj_name), codes.OK, json)
+def ok_deleted(obj_name: str, plural=False, json=False):
+    plural_suffix = "s" if plural else ""
+    return _message_response(messages.OK_DELETED.format(plural_suffix, obj_name), codes.OK, json)

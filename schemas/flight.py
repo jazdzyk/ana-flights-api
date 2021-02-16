@@ -1,6 +1,6 @@
+import constants.schema
 from models import FlightModel
 from serialization import serializer
-import constants.schema
 
 
 class FlightSchema(serializer.SQLAlchemyAutoSchema):
